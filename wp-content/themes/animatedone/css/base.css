@@ -1,0 +1,19 @@
+/* General import css styles*/
+@import url("animate.min.css");
+@import url("bootstrap.min.css");
+@import url("extralayers.css");
+@import url("supersized.css");
+@import url("supersized.shutter.css");
+
+@import url("style.css");
+@import url("menu.css");
+@import url("responsive.css");
+@import url("fontello/css/icon_set_1.css");
+@import url("fontello/css/icon_set_2.css");
+@import url("fontello/css/fontello.css");
+@import url("magnific-popup.css");
+@import url("weather.css");
+@import url("settings.css");
+.tp-banner-container{
+	width: 100%!important;
+}
