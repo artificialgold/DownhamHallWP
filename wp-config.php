@@ -18,8 +18,8 @@
  * @package WordPress
  */
 
-define('WP_HOME','https://downhamhallwp.herokuapp.com');
-define('WP_SITEURL','https://downhamhallwp.herokuapp.com');
+define('WP_HOME','https://www.downhamhall.com');
+define('WP_SITEURL','https://www.downhamhall.com');
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
