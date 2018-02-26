@@ -48,13 +48,8 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Gochi+Hand" rel="stylesheet" type="text/css">
     <script async="" src="https://www.google-analytics.com/analytics.js"></script>
-     <script id="guestline-tag" src="https://dbm.guestline.net/statics/tag.js" data-group-id="DOWNHAMHALL" async=""></script>
+     <script id="guestline-tag" src="https://tag.guestline.net/static/js/tag.js" data-group-id="DOWNHAMHALL" async></script>
     <!-- if lt IE 9script(src='js/html5shiv.min.js') script(src='js/respond.min.js') -->
-    <script type="text/javascript" charset="utf-8" async=""
-            src="https://dbm.guestline.net/statics/static/js/0.3adacabc.chunk.js"></script>
-    <script type="text/javascript" charset="utf-8" async=""
-            src="https://dbm.guestline.net/statics/static/js/1.106d1157.chunk.js">
-    </script>
 </head>
 <body style="overflow: visible;">
 <header>
