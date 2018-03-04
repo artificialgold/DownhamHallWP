@@ -1,0 +1,65 @@
+Changelog
+---------
+Version 1.2.5 [23/11/2017]
+- UPDATE: Visual Composer to version 5.4.4
+
+Version 1.2.4 [03/11/2017]
+
+- UPDATE: Visual Composer to version 5.4.2
+- BUG FIX: [ MODULE: VC | BASE ] A minor workaround fixing Varnish Cache issues.
+- BUG FIX: Fixed automatic room selection on the Room Pages' booking widget.
+- IMPROVEMENT: [ THEME OPTIONS ] Blinking indication when a misplaced <script> tag is pasted on Custom JS or Google Analytics textareas
+
+Version 1.2.3 [14/08/2017]
+
+ - BUG FIX: [ MODULE: NAV WALKER ] Fix for WPML flags menu
+ - BUG FIX: [ WIDGET: ANY LATEST POST ] Titles display issue with special characters
+ - BUG FIX: [ MODULE: WOOCOMMERCE ] Mini Woo Cart issue
+ - BUG FIX: [ WIDGET: ANY LATEST POSTS ] Issue with local date displays 
+ - IMPROVEMENT: [ BUNDLED PLUGINS ] Updated Pleathora Features Library to the latest 1.6.0 version
+ - IMPROVEMENT: [ BUNDLED PLUGINS ] Updated Visual Composer to the latest 5.2.1 version
+ - IMPROVEMENT: [ MODULE: COLOR SETS ] Additional color HEX value validation to avoid problems on LESS parsing
+
+Version 1.2.2 [25/05/2017]
+
+ - FIX: Fixing WPML module fatal error issue with some installations
+
+Version 1.2.1 [21/05/2017]
+
+ - UPDATE: Added media size option for posts/profiles/projects grid shortcodes
+ - UPDATE: added automatic post excerpts support for Any Latest Posts widget
+ - UPDATE: Plethora Features Library updated to 1.5.8
+ - UPDATE: Plethora Core updated to 1.2
+ - UPDATE: Visual Composer updated to 5.1.1
+ - FIX: before/after booking price texts are translatable fields ( wpml-config.xml updated )
+ - FIX: issue with menu items title attribute 
+ - FIX: Adding missing Extra CSS class on Fixed Ratio Media shortcode 
+ - FIX: linked products and product attributes are working fine for WooCommerce >3.0 versions
+
+Version 1.2  [02/02/2017]
+
+ - NEW: WooCommerce Demo added
+ - NEW: Woo Products Grid and Slider shortcodes added
+ - UPDATE: Added form method, date format and another two hidden fields on Call To Booking shortcode, for easier info forwarding to external booking systems.
+ - UPDATE: Added form method, date format and another two hidden fields on Call To Booking widget for easier info forwarding to external booking systems.
+ - UPDATE: Added Read More button text edit field for all post type Grid/Slider shortocdes
+ - FIX: Adults/Children fields for Call To Booking shortcode work as expected
+ - FIX: Visual Composer issue on some non latin language versions
+ - FIX: Several minor fixes and styling enhancements
+
+Version 1.1  [28/01/2017]
+
+ - UPDATE: Added two new templates for the Posts Grid shortcode
+ - UPDATE: Added extra classes for footer bar columns
+ - UPDATE: Added automatic room selection functionality for the Room Booking Request widget
+ - UPDATE: Added amenities icons for Room Posts Loop / Slider shortcodes
+ - FIX: Menu display issues for some mobile devices
+ - FIX: Proper viewport meta configuration, fix display issues on some Android devices
+ - FIX: Slider buttons work normally now
+ - FIX: Room full price contents displayed normally
+ - FIX: Slider post fix for the issue occured when changing slides order
+ - FIX: Several styling enhancements
+
+Version 1.0  [15/01/2017]
+
+ - Initial launch
