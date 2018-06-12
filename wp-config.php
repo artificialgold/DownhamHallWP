@@ -25,8 +25,8 @@ define('FORCE_SSL_ADMIN', true);
 if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
 	$_SERVER['HTTPS']='on';
 }
-define('WP_HOME','https://downhamhallxenia.herokuapp.com/');
-define('WP_SITEURL','https://downhamhallxenia.herokuapp.com/');
+define('WP_HOME','https://www.downhamhall.com/');
+define('WP_SITEURL','https://www.downhamhall.com/');
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
