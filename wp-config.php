@@ -31,14 +31,8 @@ define('FORCE_SSL_ADMIN', true);
 if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
 	$_SERVER['HTTPS']='on';
 }
-<<<<<<< HEAD
 define('WP_HOME','https://www.downhamhall.com/');
 define('WP_SITEURL','https://www.downhamhall.com/');
-=======
-
-define('WP_HOME','https://downhamhallxenia.herokuapp.com/');
-define('WP_SITEURL','https://downhamhallxenia.herokuapp.com/');
->>>>>>> af42c2176fe7f7c09cbfda6e12d1d0fc387e2d12
 
 //ENDIF
 
