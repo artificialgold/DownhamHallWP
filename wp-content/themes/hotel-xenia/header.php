@@ -47,6 +47,7 @@ for Plethora_Theme::add_container_part() )
 
 	  // Call wp_head
 	 wp_head(); ?>
+	 <script id="guestline-tag" src="https://tag.guestline.net/static/js/tag.js" data-group-id="downhamhall" async></script>
 </head>
 <body <?php body_class(); ?>>
 	<?php
