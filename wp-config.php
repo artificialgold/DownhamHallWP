@@ -18,28 +18,36 @@
  * @package WordPress
  */
 
-define('FORCE_SSL_ADMIN', true);
-// in some setups HTTP_X_FORWARDED_PROTO might contain 
-// a comma-separated list e.g. http,https
-// so check for https existence
-if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
-	$_SERVER['HTTPS']='on';
-}
-define('WP_HOME','https://www.downhamhall.com');
-define('WP_SITEURL','https://www.downhamhall.com');
+
+ //IF LOCAL
+define('WP_HOME','http://localhost:8888/DownhamHallWP/');
+define('WP_SITEURL','http://localhost:8888/DownhamHallWP/');
+
+//IF HEROKU
+// define('FORCE_SSL_ADMIN', true);
+// // in some setups HTTP_X_FORWARDED_PROTO might contain 
+// // a comma-separated list e.g. http,https
+// // so check for https existence
+// if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+// 	$_SERVER['HTTPS']='on';
+// }
+// define('WP_HOME','https://www.downhamhall.com/');
+// define('WP_SITEURL','https://www.downhamhall.com/');
+
+//ENDIF
 
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-define('DB_NAME', 'jrpco0h5709ij18g');
+define('DB_NAME', 'x5um019fj2jj6v0x');
 
 /** MySQL database username */
-define('DB_USER', 'nvohd9xcf88yhx1f');
+define('DB_USER', 'm8a4plfay5bkf3nb');
 
 /** MySQL database password */
-define('DB_PASSWORD', 'lglcxaedqb9t6m82');
+define('DB_PASSWORD', 'ijpq2i1uhxzm2i0h');
 
 /** MySQL hostname */
-define('DB_HOST', 'ivgz2rnl5rh7sphb.chr7pe7iynqr.eu-west-1.rds.amazonaws.com');
+define('DB_HOST', 'r42ii9gualwp7i1y.chr7pe7iynqr.eu-west-1.rds.amazonaws.com');
 
 /** Database Charset to use in creating database tables. */
 define('DB_CHARSET', 'utf8mb4');
@@ -56,14 +64,14 @@ define('DB_COLLATE', '');
  *
  * @since 2.6.0
  */
-define('AUTH_KEY',         'o?^Yc|4`2gO{YEq7gz)u8c<9O.^(QUhosj-){C{@R}$J,pY.*Ae,6_XzU7:981dr');
-define('SECURE_AUTH_KEY',  'jTF%`j!ZcidHgt*3j[laz4RN]Rk,PMFI$e)wp1bwTwQSEP-S)a,)*ur77 qu4?.Y');
-define('LOGGED_IN_KEY',    'No90tJpD]l,&zF$Zw:q<)=NUS2Ke^/6.oV[~7H^?^XAQP;}GK&T>g.a]9#fyZ[(&');
-define('NONCE_KEY',        '$*f<RS@~i]14lO{vAgvI99hwH/Luq~I*Xn;FUb~AE-s8`joBT;$-! %3zL|B^7 T');
-define('AUTH_SALT',        '!Jliex]aB~wGiXY%3cl5xD UC0{LRC.$H=xhP;qvuaN|x6Eu63.wL~8lcSzAQLTn');
-define('SECURE_AUTH_SALT', 'aglbqLMuw-}5j&e(&Ez{.,R^L-]g58g }K o!8[V~T;T!wZ$y!|?TbO$(L4^=i5B');
-define('LOGGED_IN_SALT',   '~TghE+~hIfdjQZ]dT=`A]H`s2T1<sAM b~fO9))riPbO&ag6{?DtgVRNMzw:M>u+');
-define('NONCE_SALT',       '!*1w{IR=rx9l[^|0ojC4l&A%|,DA@Z5a2MSifmzlxRu]7[mk/w1E7:;V(Np|6rZg');
+define('AUTH_KEY',         '[gy*-VEvPBQLwUGE=Gw<9()|W:U]4ub`tPkD7VlxS|.u!jz;9f$k}3$;[J.wQ+!,');
+define('SECURE_AUTH_KEY',  ' z*e{5850PvDx/QZ*. (1X?*/5@n=sJIDb`_`]4R Le)EzXw+I.Te2xW,~*FzqpE');
+define('LOGGED_IN_KEY',    'mI3+*`)y_&dZax:Lqn(zMV9Pvl[0%mIS%ml%jT:7oU2`aJ_+,yr?W$kxPMTiQ$#k');
+define('NONCE_KEY',        'iP<&;pauan ).3*~Z!fU?Me&Wvs,Q<[k+}_5-@|lNWQ;s>+$@V1xdYEE* &m2ir;');
+define('AUTH_SALT',        'SStX[*C-{Qg RUvR^|H`-,Se/aW+mT*B(Y)X,4nqpiB.:%D%ixwP5j}3_Ip5wR[*');
+define('SECURE_AUTH_SALT', '`1~,x5uv,C[{>SbEsk)h*N`# tO*BsE-woJ?c7nv)jzLIR?^92rnjJ#XJ`r2NN?J');
+define('LOGGED_IN_SALT',   'R[_H^?C>6mIkA1H)b3h0=|#Gz(rYM.ooSo>bth*jG+@G[8QT N X`/Tx>}mgu:,B');
+define('NONCE_SALT',       '%+h=tWd8We3oX/YEBxt(@BuLRDV%zLP2Wm#hOS?MGk=mx2Yh(Kb1,YBIQ9RoAjgI');
 
 /**#@-*/
 
