@@ -6,7 +6,7 @@ jQuery(document).ready(function ($) {
 	var setupSteps = setupStepContainer.find('.wpStateLess-s-step');
 	var stepSetupProject = setupSteps.find('.step-setup-project');
 	var userInfo = setupSteps.find('.wpStateLess-userinfo');
-	var userDetails = userInfo.find('.wpStateLess-user-detais');
+	var userDetails = userInfo.find('.wpStateLess-user-details');
 	var setupForm = setupSteps.find('.wpStateLess-step-setup-form form');
 	var comboBox = setupForm.find('.wpStateLess-combo-box');
 	var projectDropdown = comboBox.filter('.project');
@@ -15,6 +15,7 @@ jQuery(document).ready(function ($) {
   	var billingDropdown = comboBox.filter('.billing-account');
   	var noBillingButton = billingDropdown.parent().find('.create-billing-account.no-billing-account');
 	var gLoginUrl = $('#google-login').attr('href');
+	var updateJsonNonce = statelessWrapper.attr("data-nonce");
 
 	$("#google-login").attr("href", gLoginUrl + "&allowNotifications=true");
 	
@@ -402,7 +403,9 @@ jQuery(document).ready(function ($) {
 					.done(function(argument) {
 						callback(null, {ok: true, task: 'createProjectProgress', action: 'project_creation_complete', message: stateless_l10n.project_creation_complete});
 					}).fail(function(response) {
-						if(typeof response.error != 'undefined' && typeof response.error.message != 'undefined')
+						if(typeof response.error != 'undefined' && typeof response.error.code != 'undefined' && typeof response.error.message != 'undefined' && (response.error.code == 9 || response.error.message == "Callers must accept Terms of Service"))
+							callback({ok: false, task: 'createProjectProgress', action: 'failed', message: "Please Connect once to GCP Console using the Google ID you provided before proceeding with WP-Stateless setup. You must accept Google cloud Terms of Service."});
+						else if(typeof response.error != 'undefined' && typeof response.error.message != 'undefined')
 							callback({ok: false, task: 'createProjectProgress', action: 'failed', message: response.error.message});
 						else
 							callback({ok: false, task: 'createProjectProgress', action: 'retry', message: stateless_l10n.project_creation_failed});
@@ -524,6 +527,7 @@ jQuery(document).ready(function ($) {
 					},
 					data: {//JSON.stringify({
 						'action': 'stateless_wizard_update_settings',
+						'nonce': updateJsonNonce,
 						'bucket': bucketId,
 						'privateKeyData': results['createServiceAccountKey'].privateKeyData,
 						'enableAPI': results['enableAPI'].action,

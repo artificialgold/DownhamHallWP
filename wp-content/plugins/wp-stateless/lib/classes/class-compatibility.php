@@ -14,8 +14,13 @@ namespace wpCloud\StatelessMedia {
 
         private static $modules = array();
 
+        /**
+         * Object initiated on Bootstrap::__construct
+         * Save module data on admin_init hook.
+         * Initiate all the compatibility modules.
+         */
         public function __construct(){
-            $this->save_modules();
+            add_action( 'admin_init', array($this, 'save_modules'), 1 );
 
             /**
              * Dynamic Image Support
@@ -33,66 +38,129 @@ namespace wpCloud\StatelessMedia {
             new EDDDownloadMethod();
             
             /**
-             * Support for SiteOrigin CSS files
+             * Support for SiteOrigin widget CSS files
              */
             new SOWidgetCSS();
-        }
-
-        public static function register_module($id, $title , $description, $enabled = 'false', $is_constant = false){
-            if (is_bool($enabled)) {
-                $enabled = $enabled ? 'true' : 'false';
-            }
             
-            self::$modules[] = array(
-                'id'            => $id,
-                'title'         => $title,
-                'enabled'       => $enabled,
-                'description'   => $description,
-                'is_constant'   => $is_constant,
-            );
+            /**
+             * Support for SiteOrigin CSS files
+             */
+            new SOCSS();
+            
+            /**
+             * Support for Gravity Form file upload field
+             */
+            new GravityForm();
+            
+            /**
+             * Support for WPBakery Page Builder
+             */
+            new WPBakeryPageBuilder();
+            
+            /**
+             * Support for Imagify
+             */
+            new Imagify();
+            
+            /**
+             * Support for ShortPixel Image Optimizer
+             */
+            new ShortPixel();
+            
+            /**
+             * Support for WPForms
+             */
+            new WPForms();
+            
+            /**
+             * Support for WPForms
+             */
+            new WPSmush();
+            
+            /**
+             * Support for WPForms
+             */
+            new CompatibilityWooExtraProductOptions();
+            
+            /**
+             * Support for Elementor
+             */
+            new Elementor();
+            
+            /**
+             * Support for Divi
+             */
+            new Divi();
+            
+            /**
+             * Support for LearnDash
+             */
+            new LearnDash();
+            
+            /**
+             * Support for BuddyPress
+             */
+            new BuddyPress();
         }
 
+        /**
+         * Register compatibility modules so that we can ues them in settings page.
+         * Called from ICompatibility::init() method.
+         */
+        public static function register_module($args){
+            if(empty($args['id'])){
+                return;
+            }
+            if (is_bool($args['enabled'])) {
+                $args['enabled'] = $args['enabled'] ? 'true' : 'false';
+            }
+            self::$modules[$args['id']] = wp_parse_args( $args, array(
+                'id'                => '',
+                'self'              => '',
+                'title'             => '',
+                'enabled'           => false,
+                'description'       => '',
+                'is_constant'       => false,
+                'is_network'        => false,
+                'is_plugin_active'  => false,
+            ));
+        }
+
+        /**
+         * Return all the registered modules.
+         * Used in admin_init in bootstrap class as localize_script.
+         */
         public static function get_modules(){
             return self::$modules;
         }
 
         /**
+         * Return all the registered modules.
+         * Used in admin_init in bootstrap class as localize_script.
+         */
+        public static function get_module($id){
+            if(!empty(self::$modules[$id])){
+                return self::$modules[$id];
+            }
+            return false;
+        }
+
+        /**
          * Handles saving module data.
+         * Enable or disable modules from Compatibility tab.
          */
         public function save_modules(){
             if (isset($_POST['action']) && $_POST['action'] == 'stateless_modules' && wp_verify_nonce($_POST['_smnonce'], 'wp-stateless-modules')) {
                 $modules = !empty($_POST['stateless-modules']) ? $_POST['stateless-modules'] : array();
                 $modules = apply_filters('stateless::modules::save', $modules);
                 
-                update_option('stateless-modules', $modules, true);
-            }
-        }
-    }
-
-    abstract class ICompatibility{
-        protected $id = '';
-        protected $title = '';
-        protected $constant = '';
-        protected $description = '';
-
-        public function init(){
-            $is_constant = false;
-
-            if (defined($this->constant)) {
-                $this->enabled = constant($this->constant);
-                $is_constant = true;
-            }
-            else {
-                $modules = get_option('stateless-modules', array());
-                if (empty($this->enabled)) {
-                    $this->enabled = !empty($modules[$this->id]) && $modules[$this->id] == 'true' ? true : false;
+                if(is_network_admin()){
+                    update_site_option('stateless-modules', $modules);
                 }
-            }
-            
-            Module::register_module($this->id, $this->title, $this->description, $this->enabled, $is_constant);
-
-            if ($this->enabled) {
-                add_action('sm::module::init', array($this, 'module_init'));
+                else{
+                    update_option('stateless-modules', $modules, true);
+                }
+                wp_redirect( $_POST['_wp_http_referer'] );
             }
         }
     }

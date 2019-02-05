@@ -64,12 +64,12 @@ namespace wpCloud\StatelessMedia {
         $this->key_json = json_decode($args['key_json'], 1);
 
         // May be Loading Google SDK....
-        if( !class_exists( 'Google_Client' ) ) {
+        if( !class_exists( '\wpCloud\StatelessMedia\Google_Client\Google_Client' ) ) {
           include_once( ud_get_stateless_media()->path('lib/Google/vendor/autoload.php', 'dir') );
         }
 
         /* Initialize our client */
-        $this->client = new Google_Client();
+        $this->client = new \wpCloud\StatelessMedia\Google_Client\Google_Client();
 
         // We're supporting Google SDK 1.X version since
         // The plugins which also are using Google SDK may have its old version
@@ -111,15 +111,15 @@ namespace wpCloud\StatelessMedia {
         }
 
         /* Now, Initialize our Google Storage Service */
-        $this->service = new Google_Service_Storage( $this->client );
+        $this->service = new \wpCloud\StatelessMedia\Google_Client\Google_Service_Storage( $this->client );
 
       }
 
       /**
        * Wrapper for listObjects()
        */
-      public function list_objects( $bucket, $options = array() ) {
-
+      public function list_objects( $options = array() ) {
+        
         $options = wp_parse_args( $options, array(
             'delimiter'  => '',
             'maxResults' => 1000,
@@ -129,7 +129,7 @@ namespace wpCloud\StatelessMedia {
             'versions'   => false
         ) );
 
-        return $this->service->objects->listObjects( $bucket, $options );
+        return $this->service->objects->listObjects( $this->bucket, $options );
       }
 
       /**
@@ -138,7 +138,7 @@ namespace wpCloud\StatelessMedia {
        * @param array $options
        * @return mixed
        */
-      public function list_all_objects( $bucket, $options = array() ) {
+      public function list_all_objects( $options = array() ) {
 
         $options = wp_parse_args( $options, array(
           'delimiter'  => '',
@@ -149,13 +149,13 @@ namespace wpCloud\StatelessMedia {
           'versions'   => false
         ) );
 
-        $response = $this->service->objects->listObjects( $bucket, $options );
+        $response = $this->service->objects->listObjects( $this->bucket, $options );
 
         $this->temp_objects = array_merge( $this->temp_objects, $response->getItems() );
 
         if ( !empty( $response->nextPageToken ) ) {
           $options['pageToken'] = $response->nextPageToken;
-          return $this->list_all_objects( $bucket, $options );
+          return $this->list_all_objects( $this->bucket, $options );
         } else {
           return $this->temp_objects;
         }
@@ -174,6 +174,7 @@ namespace wpCloud\StatelessMedia {
           @set_time_limit( -1 );
 
           extract( $args = wp_parse_args( $args, array(
+            'force' => false,
             'name' => false,
             'absolutePath' => false,
             'mimeType' => 'image/jpeg',
@@ -193,7 +194,7 @@ namespace wpCloud\StatelessMedia {
           $name = apply_filters( 'wp_stateless_file_name', $name );
 
           // If media exists we just return it
-          if ( $media = $this->media_exists( $name ) ) {
+          if ( !$args['force'] && $media = $this->media_exists( $name ) ) {
             if($media->getCacheControl() != $args['cacheControl']){
               $media->setCacheControl($args['cacheControl']);
               $media = $this->service->objects->patch($this->bucket, $name, $media);
@@ -201,7 +202,7 @@ namespace wpCloud\StatelessMedia {
             return get_object_vars( $media );
           }
 
-          $media = new \Google_Service_Storage_StorageObject();
+          $media = new \wpCloud\StatelessMedia\Google_Client\Google_Service_Storage_StorageObject();
           $media->setName($name);
           $media->setMetadata($args['metadata']);
 
@@ -227,7 +228,7 @@ namespace wpCloud\StatelessMedia {
 
           /* Make Media Public READ for all on success */
           if (is_object($media)) {
-            $acl = new Google_Service_Storage_ObjectAccessControl();
+            $acl = new \wpCloud\StatelessMedia\Google_Client\Google_Service_Storage_ObjectAccessControl();
             $acl->setEntity('allUsers');
             $acl->setRole('READER');
 
@@ -386,7 +387,7 @@ namespace wpCloud\StatelessMedia {
           'WP-Stateless',
           "<b>v2.0</b>",
           $pluginName,
-          "<b>v" . Google_Client::LIBVER . "</b>"
+          "<b>v" . \wpCloud\StatelessMedia\Google_Client\Google_Client::LIBVER . "</b>"
         );
 
         set_transient( "wp_stateless_google_sdk_conflict", $error );
