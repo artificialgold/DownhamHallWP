@@ -101,7 +101,7 @@ define('WP_DEBUG', false);
 /*
 Stop cache busting message for GCloud
 */
-deine('WP_STATELESS_MEDIA_CACHE_BUSTING',true);
+define('WP_STATELESS_MEDIA_CACHE_BUSTING',true);
 
 /* That's all, stop editing! Happy blogging. */
 
