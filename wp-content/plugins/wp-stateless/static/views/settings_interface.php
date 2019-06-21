@@ -2,6 +2,7 @@
     <div id="stateless-settings-page-title">
         <h1><?php _e( 'WP-Stateless', ud_get_stateless_media()->domain ); ?></h1>
         <div class="description"><?php _e( 'Upload and serve your WordPress media files from Google Cloud Storage.', ud_get_stateless_media()->domain ); ?></div>
+        <div class="no-js-error" ng-hide="jsLoaded" ng-controller="noJSWarning">You have a problem with JS.</div>
     </div>
     <h2 class="nav-tab-wrapper">  
         <a href="#stless_settings_tab" class="stless_setting_tab nav-tab  nav-tab-active"><?php _e( 'Settings', ud_get_stateless_media()->domain ); ?></a>  
@@ -180,8 +181,8 @@
                                         </label>
                                     </p>
                                     <p class="description">
-                                    <strong ng-bind="sm.showNotice('custom_domain')" ></strong> <br>
-                                    <strong class="notice" ng-show="sm.is_custom_domain"><?php printf(__( 'This will require proxy/load balancer.', ud_get_stateless_media()->domain )); ?></strong>
+                                    <strong ng-bind="sm.showNotice('custom_domain')" ></strong>
+                                    <strong class="notice" ng-show="sm.is_ssl"><?php printf(__( 'This will require proxy/load balancer.', ud_get_stateless_media()->domain )); ?></strong>
                                     <?php printf(__( 'Replace the default GCS domain with your own custom domain. This will require you to <a href="%s" target="_blank">configure a CNAME</a>. Be advised that the bucket name and domain name must match exactly, and HTTPS is not supported with a custom domain out of the box.', ud_get_stateless_media()->domain ), 'https://cloud.google.com/storage/docs/xml-api/reference-uris#cname'); ?>
                                     </p>
                                     <hr>
@@ -200,9 +201,9 @@
                                     <p class="description">
                                     <?php printf(__( 'Organize uploads into year and month based folders. This will update the <a href="%s">related WordPress media setting</a>.', ud_get_stateless_media()->domain ), admin_url("options-media.php")); ?>
                                     </p>
+                                    <hr>
                                     <?php endif; ?>    
 
-                                    <hr>
                                     <h4><?php _e( 'Cache-Busting', ud_get_stateless_media()->domain ); ?></h4>
                                     <p>
                                         <select id="cache_busting" name="sm[hashify_file_name]" ng-model="sm.hashify_file_name" ng-change="sm.generatePreviewUrl()" ng-disabled="sm.readonly.hashify_file_name || sm.mode == 'stateless'">
@@ -213,11 +214,10 @@
                                             <option value="false"><?php _e( 'Disable', ud_get_stateless_media()->domain ); ?></option>
                                         </select>
                                     </p>
-                                    <p class="description"><strong ng-bind="sm.showNotice('hashify_file_name')" ></strong> 
-                                    <span ng-show="sm.mode == 'stateless'">
-                                    <?php _e(sprintf( "<b>Required by Stateless Mode. Override with the <a href='%s' target='_blank'>WP_STATELESS_MEDIA_CACHE_BUSTING</a> constant.</b>","https://github.com/wpCloud/wp-stateless/wiki/Constants#wp_stateless_media_cache_busting"), ud_get_stateless_media()->domain);?>
+                                    <p class="description"><strong ng-bind="sm.showNotice('hashify_file_name')" ></strong>
+                                    <span ng-show="sm.mode == 'stateless' && sm.readonly.hashify_file_name != 'constant'">
+                                    <?php _e(sprintf( "<b>Required by Stateless Mode. Override with the <a href='%s' target='_blank'>WP_STATELESS_MEDIA_CACHE_BUSTING</a> constant.</b>","https://wp-stateless.github.io/docs/constants/#wp_stateless_media_cache_busting"), ud_get_stateless_media()->domain);?>
                                     </span>
-
                                     <?php _e( 'Prepends a random set of numbers and letters to the filename. This is useful for preventing caching issues when uploading files that have the same filename.', ud_get_stateless_media()->domain ); ?></p>
                                 </fieldset>
                             </td>

@@ -147,6 +147,11 @@ namespace wpCloud\StatelessMedia {
           add_filter('sanitize_file_name', array( 'wpCloud\StatelessMedia\Utility', 'randomize_filename' ), 10);
         }
 
+        /**
+         * Delete table when blog is deleted.
+         */
+        add_action( 'wp_delete_site', array($this, 'wp_delete_site'));
+
         /* Initialize plugin only if Mode is not 'disabled'. */
         if ( $this->get( 'sm.mode' ) !== 'disabled' ) {
 
@@ -201,11 +206,7 @@ namespace wpCloud\StatelessMedia {
               add_filter( 'wp_stateless_bucket_link', array( $this, 'wp_stateless_bucket_link' ) );
             }
 
-            if ( $root_dir = $this->get( 'sm.root_dir' ) ) {
-              if ( trim( $root_dir, '/ ' ) !== '' ) { // Remove any forward slash and empty space.
-                add_filter( 'wp_stateless_file_name', array( $this, 'handle_root_dir' ) );
-              }
-            }
+            add_filter( 'wp_stateless_file_name', array( $this, 'handle_root_dir' ) );
 
             /**
              * Rewrite Image URLS
@@ -274,10 +275,11 @@ namespace wpCloud\StatelessMedia {
             $gs_name = substr($gs_name, $root_dir_pos);
           }
 
+          if ( !isset($gs_name) || empty($gs_name) ) {
+            return [];
+          }
+
           foreach ($sources as $width => &$image) {
-            if (!isset($image_meta['gs_name']) || empty($image_meta['gs_name'])) {
-              continue;
-            }
 
             // If srcset includes original image src, replace it
             if (substr_compare($image['url'], $gs_name, -strlen($gs_name)) === 0) {
@@ -287,10 +289,6 @@ namespace wpCloud\StatelessMedia {
               $found = false;
               foreach ($image_meta['sizes'] as $key => $meta) {
                 if (!isset($meta['gs_name']) || empty($meta['gs_name'])) {
-                  // if mode is stateless and nothing to show for srcset item - unset that item
-                  if ( $this->get( 'sm.mode' ) === 'stateless' ) {
-                    $image = null;
-                  }
                   continue;
                 }
 
@@ -341,7 +339,10 @@ namespace wpCloud\StatelessMedia {
         $custom_domain = str_replace(array('http://', 'https://'), '', $custom_domain);
         $custom_domain = trim($custom_domain, '/');
 
-        if ( !empty($sm['bucket']) && !empty($custom_domain) && $custom_domain !== 'storage.googleapis.com' && ( $is_ssl === 0 || $custom_domain != $sm['bucket'] ) ) {
+        // checking whether the provided domain is valid.
+        // if the custom domain is same as the bucket name
+        // or the custom domain is using https.
+        if ( !empty($sm['bucket']) && !empty($custom_domain) && $custom_domain !== 'storage.googleapis.com' && ( $is_ssl === 0 || $custom_domain == $sm['bucket'] ) ) {
           $image_host = $is_ssl === 0 ? 'https://' : 'http://';  // bucketname will be host
           $image_host .=  $custom_domain;
         }
@@ -611,7 +612,12 @@ namespace wpCloud\StatelessMedia {
         $root_dir = $this->get( 'sm.root_dir' );
         $root_dir = trim( $root_dir, '/ ' ); // Remove any forward slash and empty space.
 
-        if ( !empty( $root_dir ) ) {
+        $upload_dir = wp_upload_dir();
+        $current_path = str_replace( wp_normalize_path( trailingslashit( $upload_dir[ 'basedir' ] ) ), '', wp_normalize_path( $current_path ) );
+        $current_path = str_replace( wp_normalize_path( trailingslashit( $upload_dir[ 'baseurl' ] ) ), '', wp_normalize_path( $current_path ) );
+
+        // skip adding root dir if it's already added.
+        if ( !empty( $root_dir ) && strpos($current_path, $root_dir) !== 0 ) {
           return $root_dir . '/' . $current_path;
         }
 
@@ -687,14 +693,11 @@ namespace wpCloud\StatelessMedia {
           }
           
           if ( ! $meta_key ) {
-              return $meta_cache;
+            return $meta_cache;
           }
           
           if ( isset($meta_cache[$meta_key]) ) {
-              if ( $single )
-                  return $meta_cache[$meta_key][0];
-              else
-                  return $meta_cache[$meta_key];
+            return $meta_cache[$meta_key];
           }
           
           // in case no metadata is found return what was passed in $value. 
@@ -907,6 +910,7 @@ namespace wpCloud\StatelessMedia {
             break;
 
           case 'media_page_stateless-setup':
+          case 'settings_page_stateless-setup':
             wp_enqueue_style( 'wp-stateless');
             wp_enqueue_style( 'wp-stateless-bootstrap' );
             wp_enqueue_style( 'wp-stateless-setup-wizard' );
@@ -920,6 +924,7 @@ namespace wpCloud\StatelessMedia {
             wp_enqueue_script( 'wp-stateless-setup-wizard-js' );
             break;
           case 'media_page_stateless-settings':
+          case 'settings_page_stateless-settings':
             wp_enqueue_style( 'wp-stateless');
             wp_enqueue_script( 'wp-stateless-settings' );
             wp_enqueue_style( 'bootstrap-grid-v4' );
@@ -937,11 +942,12 @@ namespace wpCloud\StatelessMedia {
                     'title' => sprintf( __( "Stateless mode enables and requires the Cache-Busting option.", ud_get_stateless_media()->domain ) ),
                     'message' => sprintf( __("WordPress looks at local files to prevent files with the same filenames. 
                                           Since Stateless mode bypasses this check, there is a potential for files to be stored with the same file name. We enforce the Cache-Busting option to prevent this. 
-                                          Override with the <a href='%s' target='_blank'>%s</a> constant.", ud_get_stateless_media()->domain),"https://github.com/wpCloud/wp-stateless/wiki/Constants#wp_stateless_media_cache_busting", "WP_STATELESS_MEDIA_CACHE_BUSTING" ),
+                                          Override with the <a href='%s' target='_blank'>%s</a> constant.", ud_get_stateless_media()->domain),"https://wp-stateless.github.io/docs/constants/#wp_stateless_media_cache_busting", "WP_STATELESS_MEDIA_CACHE_BUSTING" ),
                   );
             echo "<script id='template-stateless-cache-busting' type='text/html'>";
             include ud_get_stateless_media()->path( '/static/views/error-notice.php', 'dir' );
             echo "</script>";
+            break;
           default: break;
         }
 
@@ -1257,6 +1263,21 @@ namespace wpCloud\StatelessMedia {
       }
 
       /**
+       * 
+       * Delete table when blog is deleted.
+       */
+      public function wp_delete_site($old_site){
+        global $wpdb;
+        
+        switch_to_blog( $old_site->id );
+        $table_name = $wpdb->prefix . 'sm_sync';
+        
+        $sql = "DROP TABLE IF EXISTS $table_name";
+        $wpdb->query($sql);
+        restore_current_blog();
+      }
+
+      /**
        * Redirect_to_splash
        *
        * @param string $plugin
@@ -1308,7 +1329,7 @@ namespace wpCloud\StatelessMedia {
           'title' => sprintf( __( "Stateless mode now requires the Cache-Busting option.", ud_get_stateless_media()->domain ) ),
           'message' => sprintf( __("WordPress looks at local files to prevent files with the same filenames. 
                                 Since Stateless mode bypasses this check, there is a potential for files to be stored with the same file name. We enforce the Cache-Busting option to prevent this. 
-                                Override with the <a href='%s' target='_blank'>%s</a> constant.", ud_get_stateless_media()->domain),"https://github.com/wpCloud/wp-stateless/wiki/Constants#wp_stateless_media_cache_busting", "WP_STATELESS_MEDIA_CACHE_BUSTING" ),
+                                Override with the <a href='%s' target='_blank'>%s</a> constant.", ud_get_stateless_media()->domain),"https://wp-stateless.github.io/docs/constants/#wp_stateless_media_cache_busting", "WP_STATELESS_MEDIA_CACHE_BUSTING" ),
         ), 'notice' );
       }
 

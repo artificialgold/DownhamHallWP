@@ -17,10 +17,13 @@ namespace wpCloud\StatelessMedia {
             public function __construct(){
                 global $wpdb;
                 $this->table_name = $wpdb->prefix . self::table;
+                ud_get_stateless_media()->create_db();
+
                 // Manual sync using sync tab. 
                 // called from ajax action_get_non_library_files_id
                 // Return files to be manually sync from sync tab.
                 add_filter( 'sm:sync::nonMediaFiles', array($this, 'sync_non_media_files') );
+                add_filter( 'sm:sync::queue_is_exists', array($this, 'queue_is_exists'), 10, 2 );
 
                 // register a dir to sync from sync tab
                 add_action( 'sm:sync::register_dir', array($this, 'register_dir') );
@@ -68,14 +71,13 @@ namespace wpCloud\StatelessMedia {
             public function sync_file($name, $absolutePath, $forced = false, $args = array()){
                 $args = wp_parse_args($args, array(
                     'stateless' => true, // whether to delete local file in stateless mode.
+                    'download'  => false, // whether to delete local file in stateless mode.
                 ));
                 
                 if($this->queue_is_exists($name, 'synced') && !$forced){
                     return false;
                 }
 
-                // add file_path to the file list.
-                $this->queue_add_file($name, 'synced');
                 $file_type = wp_check_filetype($absolutePath);
                 if(empty($this->client)){
                     $this->client = ud_get_stateless_media()->get_client();
@@ -90,7 +92,7 @@ namespace wpCloud\StatelessMedia {
 
                 do_action( 'sm::pre::sync::nonMediaFiles', $name, $absolutePath); // , $media
 
-                if ( !$local_file_exists && ud_get_stateless_media()->get( 'sm.mode' ) !== 'stateless') {
+                if ( !$local_file_exists && ( $args['download'] || ud_get_stateless_media()->get( 'sm.mode' ) !== 'stateless' ) ) {
 
                     // Try get it and save
                     $result_code = $this->client->get_media( $name, true, $absolutePath );
@@ -107,7 +109,7 @@ namespace wpCloud\StatelessMedia {
                         'name' => $name,
                         'force' => ($forced == 2),
                         'absolutePath' => $absolutePath,
-                        'cacheControl' => apply_filters( 'sm:item:cacheControl', 'public, max-age=36000, must-revalidate', $absolutePath),
+                        'cacheControl' => apply_filters( 'sm:item:cacheControl', 'public, max-age=36000, must-revalidate', $absolutePath), //@todo use cacheControl from settings page.
                         'contentDisposition' => apply_filters( 'sm:item:contentDisposition', null, $absolutePath),
                         'mimeType' => $file_type['type'],
                         'metadata' => array(
@@ -123,6 +125,8 @@ namespace wpCloud\StatelessMedia {
                     if($args['stateless'] == true && ud_get_stateless_media()->get( 'sm.mode' ) === 'stateless'){
                         unlink($absolutePath);
                     }
+                    // add file_path to the file list.
+                    $this->queue_add_file($name, 'synced');
                     return $media;
                 }
 

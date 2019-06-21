@@ -50,7 +50,7 @@ class Plugin extends Factory
 		$this->mysqlVersion = $wpdb->get_var('SELECT VERSION()');
 		
 		// TODO: Could / should cache this above
-		if(!empty($this->mysqlVersion) && preg_match('/^\d+/', $this->mysqlVersion, $majorVersion) && (int)$majorVersion[0] > 8)
+		if(!empty($this->mysqlVersion) && preg_match('/^\d+/', $this->mysqlVersion, $majorVersion) && (int)$majorVersion[0] >= 8)
 			$this->_spatialFunctionPrefix = 'ST_';
 		
 		$this->legacySettings = get_option('WPGMZA_OTHER_SETTINGS');
@@ -87,10 +87,7 @@ class Plugin extends Factory
 		if(!empty($this->settings->wpgmza_maps_engine))
 			$this->settings->engine = $this->settings->wpgmza_maps_engine;
 		
-		if(!empty($_COOKIE['wpgmza-developer-mode']))
-			$this->settings->developer_mode = true;
-		
-		add_action('init', array($this, 'onInit'));
+		add_action('init', array($this, 'onInit'), 9);
 		
 		foreach(Plugin::$enqueueScriptActions as $action)
 		{
@@ -101,6 +98,16 @@ class Plugin extends Factory
 			
 		if($this->settings->engine == 'open-layers')
 			require_once(plugin_dir_path(__FILE__) . 'open-layers/class.nominatim-geocode-cache.php');
+	
+		if($this->settings->wpgmza_settings_marker_pull == '1' && !file_exists(wpgmza_return_marker_path()))
+		{
+			$this->settings->wpgmza_settings_marker_pull = '0';
+			
+			add_action('admin_notices', function() {
+				echo '<div class="error"><p>' . __('<strong>WP Google Maps:</strong> Cannot find the specified XML folder. This has been switched back to the Database method in Maps -> Settings -> Advanced', 'wp-google-maps') . '</p></div>';
+			});
+		}
+
 	}
 	
 	public function __set($name, $value)
@@ -144,10 +151,12 @@ class Plugin extends Factory
 	 */
 	public function loadScripts()
 	{
+		$self = $this;
+		
 		if(!$this->scriptLoader)
 			$this->scriptLoader = new ScriptLoader($this->isProVersion());
 		
-		if(!empty($this->settings->developer_mode))
+		if($this->isInDeveloperMode())
 			$this->scriptLoader->build();
 		
 		if(Plugin::$enqueueScriptsFired)
@@ -159,9 +168,9 @@ class Plugin extends Factory
 		{
 			foreach(Plugin::$enqueueScriptActions as $action)
 			{
-				add_action($action, function() {
-					$this->scriptLoader->enqueueScripts();
-					$this->scriptLoader->enqueueStyles();
+				add_action($action, function() use ($self) {
+					$self->scriptLoader->enqueueScripts();
+					$self->scriptLoader->enqueueStyles();
 				});
 			}
 		}
@@ -185,12 +194,15 @@ class Plugin extends Factory
 				'googleMapsAPIErrorDialog' => $googleMapsAPIErrorDialogHTML
 			),
 			
-			'resturl'				=> get_rest_url(null, 'wpgmza/v1'),
+			'resturl'				=> preg_replace('#/$#', '', get_rest_url(null, 'wpgmza/v1')),
 			'restnonce'				=> wp_create_nonce('wp_rest'),
 
 			'settings' 				=> $settings,
 			'currentPage'			=> $this->getCurrentPage(),
+			
 			'userCanAdministrator'	=> (current_user_can('administrator') ? 1 : 0),
+			'serverCanInflate'		=> RestAPI::isCompressedPathVariableSupported(),
+			
 			'localized_strings'		=> $strings->getLocalizedStrings(),
 			'api_consent_html'		=> $this->gdprCompliance->getConsentPromptHTML(),
 			'basic_version'			=> $this->getBasicVersion(),
@@ -198,7 +210,8 @@ class Plugin extends Factory
 			
 			'defaultMarkerIcon'		=> Marker::DEFAULT_ICON,
 
-			'is_admin'				=> (is_admin() ? 1 : 0)
+			'is_admin'				=> (is_admin() ? 1 : 0),
+			'locale'				=> get_locale()
 		));
 		
 		if(!empty($result->settings->wpgmza_settings_ugm_email_address))
@@ -255,7 +268,7 @@ class Plugin extends Factory
 	 */
 	public function isUsingMinifiedScripts()
 	{
-		return empty($this->settings->developer_mode);
+		return $this->isInDeveloperMode();
 	}
 	
 	/**
@@ -265,6 +278,19 @@ class Plugin extends Factory
 	public function isInDeveloperMode()
 	{
 		return !(empty($this->settings->developer_mode) && !isset($_COOKIE['wpgmza-developer-mode']));
+	}
+	
+	public static function preloadIsInDeveloperMode()
+	{
+		$globalSettings = get_option('wpgmza_global_settings');
+		
+		if(empty($globalSettings))
+			return !empty($_COOKIE['wpgmza-developer-mode']);
+		
+		if(!($globalSettings = json_decode($globalSettings)))
+			return false;
+		
+		return isset($globalSettings->developer_mode) && $globalSettings->developer_mode == true;
 	}
 	
 	/**
@@ -312,14 +338,42 @@ class Plugin extends Factory
 
 add_action('plugins_loaded', function() {
 	
-	global $wpgmza;
-	
-	if(defined('WPGMZA_PRO_VERSION') && version_compare(WPGMZA_PRO_VERSION, '7.11.00', '<') && class_exists('WPGMZA\\ProPlugin'))
+	function create()
 	{
-		$wpgmza = new ProPlugin();
-		return;
+		global $wpgmza;
+		
+		if(defined('WPGMZA_PRO_VERSION') && version_compare(WPGMZA_PRO_VERSION, '7.11.00', '<') && class_exists('WPGMZA\\ProPlugin'))
+		{
+			$wpgmza = new ProPlugin();
+			return;
+		}
+		
+		$wpgmza = Plugin::createInstance();
 	}
 	
-	$wpgmza = Plugin::createInstance();
+	if(Plugin::preloadIsInDeveloperMode())
+		create();
+	else
+		try{
+			create();
+		}catch(Exception $e){
+			add_action('admin_notices', function() use ($e) {
+				
+				?>
+				<div class="notice notice-error is-dismissible">
+					<p>
+						<?php
+						_e('WP Google Maps', 'wp-google-maps');
+						?>:
+						<?php
+						_e('The plugin cannot initialise due to a fatal error. This is usually due to missing files or incompatible software. Please re-install the plugin and any relevant add-ons. We recommend that you use at least PHP 5.6. Technical details are as follows: ', 'wp-google-maps');
+						echo $e->getMessage();
+						?>
+					</p>
+				</div>
+				<?php
+				
+			});
+		}
 	
 });

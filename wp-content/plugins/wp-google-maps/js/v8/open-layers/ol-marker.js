@@ -29,7 +29,8 @@ jQuery(function($) {
 		this.overlay = new ol.Overlay({
 			element: this.element,
 			position: origin,
-			positioning: "bottom-center"
+			positioning: "bottom-center",
+			stopEvent: false
 		});
 		this.overlay.setPosition(origin);
 		
@@ -80,9 +81,14 @@ jQuery(function($) {
 		this.label.html(label);
 	}
 	
+	WPGMZA.OLMarker.prototype.getVisible = function(visible)
+	{
+		return this.overlay.getElement().style.display != "none";
+	}
+	
 	WPGMZA.OLMarker.prototype.setVisible = function(visible)
 	{
-		Parent.prototype.setVisible(visible);
+		Parent.prototype.setVisible.call(this, visible);
 		
 		this.overlay.getElement().style.display = (visible ? "block" : "none");
 	}
@@ -157,6 +163,11 @@ jQuery(function($) {
 		}
 		else
 			$(this.element).draggable({disabled: true});
+	}
+	
+	WPGMZA.OLMarker.prototype.setOpacity = function(opacity)
+	{
+		$(this.element).css({opacity: opacity});
 	}
 	
 	WPGMZA.OLMarker.prototype.onDragStart = function(event)

@@ -1,3 +1,32 @@
+#### 2.2.7 ####
+* FIX - WP-Smush compatibility enhanced. GitHub Issue [#366](https://github.com/wpCloud/wp-stateless/issues/366).
+* FIX - Fixed multisite installation support. GitHub Issue [#370](https://github.com/wpCloud/wp-stateless/issues/370).
+* FIX - Fixed settings UI problems related to Cache-Busting option. GitHub Issue [#373](https://github.com/wpCloud/wp-stateless/issues/373).
+* FIX - Other minor fixes.
+
+#### 2.2.6 ####
+* FIX - Multisite Network Settings page fixed. GitHub Issue [#369](https://github.com/wpCloud/wp-stateless/issues/369).
+* FIX - Fixed incorrect Compatibilities behavior when Bucket Folder is set. GitHub Issue [#368](https://github.com/wpCloud/wp-stateless/issues/368).
+* FIX - Other minor fixes.
+
+#### 2.2.5 ####
+* NEW - Added ability to start sync process from specific Attachment ID. GitHub Issue [#360](https://github.com/wpCloud/wp-stateless/issues/360).
+* COMPATIBILITY - Added compatibility support for LiteSpeed Cache plugin. Especially to support optimized .webp images. GitHub Issue [#357](https://github.com/wpCloud/wp-stateless/issues/357).
+* FIX - Other minor fixes.
+
+#### 2.2.4 ####
+* NEW - Added new filter `wp_stateless_skip_add_media`. Allows skipping synchronization of the media object with GCS depending on custom condition. GitHub Issue [#344](https://github.com/wpCloud/wp-stateless/issues/344).
+* FIX - Compatibility Manager is considering Child Themes now. GitHub Issue [#351](https://github.com/wpCloud/wp-stateless/issues/351).
+* FIX - Custom domains handling has been fixed. GitHub Issue [#358](https://github.com/wpCloud/wp-stateless/issues/358).
+* ENHANCEMENT - Imagify Image Optimizer and WP Smush compatibilities improved. GitHub Issue [#359](https://github.com/wpCloud/wp-stateless/issues/359).
+
+#### 2.2.3 ####
+* FIX - `get_post_metadata` does not break multi-dimensional arrays anymore. GitHub Issue [#352](https://github.com/wpCloud/wp-stateless/issues/352).
+* FIX - `PHP Warning: substr_compare()` fixed. GitHub Issue [#350](https://github.com/wpCloud/wp-stateless/issues/350).
+* FIX - Filtering Domain setting before saving in order to get rid of possible empty spaces. GitHub Issue [#348](https://github.com/wpCloud/wp-stateless/issues/348).
+* FIX - Incorrect remote file path generated when disabled Organization setting. GitHub Issue [#343](https://github.com/wpCloud/wp-stateless/issues/343).
+* FIX - Hiding admin notices correctly. GitHub Pull Request [#355](https://github.com/wpCloud/wp-stateless/pull/355).
+
 #### 2.2.2 ####
 * FIX - Proper 'srcset' attribute handling. GitHub Issue [#342](https://github.com/wpCloud/wp-stateless/issues/342).
 * ENHANCEMENT - Minor fixes code quality.

@@ -25,7 +25,25 @@ class Strings
 			'api_dashboard'				=> __('API Dashboard', 'wp-google-maps'),
 			'verify_project'			=> __('Verify Project', 'wp-google-maps'),
 			
-			'failed_to_get_address'		=> __('Failed to get address', 'wp-google-maps')
+			'failed_to_get_address'		=> __('Failed to get address', 'wp-google-maps'),
+			'failed_to_create_marker'	=> __('Failed to create marker %d - this marker cannot be placed on the map.', 'wp-google-maps'),
+			
+			'my_location'				=> __('My Location', 'wp-google-maps'),
+			
+			'kilometers_away'			=> __('km away', 'wp-google-maps'),
+			'miles_away'				=> __('miles away', 'wp-google-maps'),
+			
+			'import_completed'			=> __( 'Import completed.', 'wp-google-maps' ),
+			'importing_please_wait'		=> __('Importing, this may take a moment...', 'wp-google-maps'),
+			
+			'no_address_specified'		=> __('No address specified', 'wp-google-maps'),
+			'add_marker'				=> __('Add Marker', 'wp-google-maps'),
+			'save_marker'				=> __('Save Marker', 'wp-google-maps'),
+			'please_wait'				=> __('Please Wait...', 'wp-google-maps'),
+			'zero_results'				=> __('Zero results found', 'wp-google-maps'),
+			'geocode_fail'				=> __('Geocode failed due to technical reasons', 'wp-google-maps'),
+			
+			'you_must_check_gdpr_consent'	=> __('You must check the GDPR consent box to continue', 'wp-google-maps')
 		));
 	}
 	

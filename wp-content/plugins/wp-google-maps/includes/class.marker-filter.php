@@ -11,8 +11,9 @@ class MarkerFilter extends Factory
 	
 	public function __construct($options=null)
 	{
-		foreach($options as $key => $value)
-			$this->{$key} = $value;
+		if($options)
+			foreach($options as $key => $value)
+				$this->{$key} = $value;
 	}
 	
 	public function __get($name)
@@ -56,15 +57,33 @@ class MarkerFilter extends Factory
 		$this->{$name} = $value;
 	}
 	
+	protected function loadMap()
+	{
+		global $wpdb;
+		
+		$id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}wpgmza_maps LIMIT 1");
+		
+		if(!$id)
+			return;
+		
+		$this->map = new Map($id);
+	}
+	
 	protected function applyRadiusClause($query)
 	{
+		global $wpgmza;
+		
 		if(!$this->center || !$this->radius)
 			return;
 		
 		$lat = $this->_center['lat'] / 180 * 3.1415926;
 		$lng = $this->_center['lng'] / 180 * 3.1415926;
+		$radius = $this->radius;
 		
-		$query->where['radius'] = '
+		if($this->map && $this->map->storeLocatorDistanceUnits == Distance::UNITS_MI)
+			$radius *= Distance::KILOMETERS_PER_MILE;
+		
+		$query->where['radius'] = "
 			(
 				6381 *
 			
@@ -72,23 +91,23 @@ class MarkerFilter extends Factory
 			
 				ATAN2(
 					SQRT(
-						POW( SIN( ( (X(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 ) +
-						COS( X(latlng) / 180 * 3.1415926 ) * COS( %f ) *
-						POW( SIN( ( (Y(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 )
+						POW( SIN( ( ({$wpgmza->spatialFunctionPrefix}X(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 ) +
+						COS( {$wpgmza->spatialFunctionPrefix}X(latlng) / 180 * 3.1415926 ) * COS( %f ) *
+						POW( SIN( ( ({$wpgmza->spatialFunctionPrefix}Y(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 )
 					),
 					
 					SQRT(1 - 
 						(
-							POW( SIN( ( (X(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 ) +
-							COS( X(latlng) / 180 * 3.1415926 ) * COS( %f ) *
-							POW( SIN( ( (Y(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 )
+							POW( SIN( ( ({$wpgmza->spatialFunctionPrefix}X(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 ) +
+							COS( {$wpgmza->spatialFunctionPrefix}X(latlng) / 180 * 3.1415926 ) * COS( %f ) *
+							POW( SIN( ( ({$wpgmza->spatialFunctionPrefix}Y(latlng) / 180 * 3.1415926) - %f ) / 2 ), 2 )
 						)
 					)
 				)
 			)
 			
 			< %f
-		';
+		";
 		
 		$query->params[] = $lat;
 		$query->params[] = $lat;
@@ -98,7 +117,7 @@ class MarkerFilter extends Factory
 		$query->params[] = $lat;
 		$query->params[] = $lng;
 		
-		$query->params[] = $this->radius;
+		$query->params[] = $radius;
 	}
 	
 	public function getQuery()
@@ -121,12 +140,11 @@ class MarkerFilter extends Factory
 		
 		$query = $this->getQuery();
 		
-		if($fields == null)
+		if(empty($fields))
 			$query->fields[] = '*';
 		else
 			foreach($fields as $field)
 				$query->fields[] = $field;
-			//$query->fields = $fields;
 		
 		$sql = $query->build();
 		
@@ -150,19 +168,3 @@ class MarkerFilter extends Factory
 	
 	
 }
-
-/*$filter = MarkerFilter::createInstance();
-
-header('Content-type: text/plain');
-
-$filter->map_id = 1;
-$filter->center = array(
-	'lat'	=> 51,
-	'lng'	=> -3
-);
-$filter->radius = 500;
-//$filter->keywords = 'test';
-
-print_r( $filter->getFilteredIDs() );
-
-exit;*/

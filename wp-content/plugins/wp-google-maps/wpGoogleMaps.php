@@ -3,7 +3,7 @@
 Plugin Name: WP Google Maps
 Plugin URI: https://www.wpgmaps.com
 Description: The easiest to use Google Maps plugin! Create custom Google Maps with high quality markers containing locations, descriptions, images and links. Add your customized map to your WordPress posts and/or pages quickly and easily with the supplied shortcode. No fuss.
-Version: 7.11.02
+Version: 7.11.32
 Author: WP Google Maps
 Author URI: https://www.wpgmaps.com
 Text Domain: wp-google-maps
@@ -11,6 +11,189 @@ Domain Path: /languages
 */
 
 /*
+ * 7.11.32 :- 2019-06-21 :- Low priority
+ * Added mechanism to report 403 Forbidden on REST API, this is usually caused by security plugins blocking REST requests for non-logged in users
+ *
+ * 7.11.31 :- 2019-06-18 :- Low priority
+ * Added checkbox to disable Autoptimize workaround for setups where the workaround prevents CSS aggregation
+ * DataTable module now uses RestAPI module to make AJAX requests
+ * Fixed "Permalink Manager Lite" breaking admin marker table when POST requests are used
+ * Fixed welcome screen not working
+ *
+ * 7.11.30 :- 2019-06-12 :- Medium priority
+ * Added /decompress REST API endpoint for debugging compressed path variable requests
+ * Added integration with WP REST Cache by Acato
+ * Added Elias Fano encoding modules for efficient transmission of marker ID's on compressed path variable requests
+ * REST API module now no longer loads the entire WP REST API client side library
+ * Moved clearInterval on Google infowindow to before event is triggered, the event will no longer fire repeatedly if any attached listeners cause an error
+ * Fixed bulk delete not working
+ * Removed performance intensive regex checks on template_redirect. Short code flag is now set by short code callbacks
+ * Fixed notice in legacy-core.php when no map ID present on shortcode
+ * Fixed cannot use scalar value as array when localizing legacy current map ID global
+ * Fixed issues with older versions of Pro add-on and admin marker table
+ *
+ * 7.11.29 :- 2019-06-06 :- Low priority
+ * Added support for compressed path variables on REST API module (experimental)
+ *
+ * 7.11.28 :- 2019-06-03 :- Medium priority
+ * Added nonce to settings form on admin post action
+ * Fixed errors on PHP installations where documentElement is not a property on DOMDocument
+ *
+ * 7.11.27 :- 2019-05-29 :- Medium priority
+ * Added keypress listener for enter on store locator for configurations which don't emit keydown
+ * Changed (experimental) compressed REST datatables GET request to use a cachable path variable rather than query string
+ * Fixed classes that subclass WPGMZA.AdvancedTableDataTable not having "Show X items" setting applied in Pro
+ * Fixed missing spatial function prefixes in WPGMZA\MarkerFilter::applyRadiusClause, now works with MySQL 8.*
+ * Fixed "no results found" not showing when new MarkerFilter returns zero results
+ * DataTables AJAX route no longer issues notice when used without a HTTP_REFERER
+ * 
+ * 7.11.26 - 2019-05-22 :- Medium Priority
+ * Tested with WordPress 5.2.1
+ * REST API only passes map ID to child classes of MarkerListing and AdvancedTable
+ * Fixed admin marker table not loading due to the above
+ * 
+ * 7.11.25 - 2019-05-21 :- Low priority
+ * Added CSS max width fix to override themes breaking OpenLayers markers
+ * Added WPGMZA.Text and WPGMZA.GoogleText modules
+ * Added experimental setting WPGMZA.settings.useCompressedDataTablesRequests
+ * Developer mode and SCRIPT_DEBUG will now enqueue OpenLayers unminified
+ * WPGMZA.LatLngBounds can now take an instance of WPGMZA.LatLngBounds in constructor arguments
+ * Renamed deletePolygon, deletePolyline to removePolygon, removePolyline etc. on WPGMZA.Map
+ * wpgmaps_check_shortcode no longer sets short_code_active to false
+ * Fixed links not clickable in Pro InfoWindows
+ * Fixed issue with WPGMZA.LatLngBounds around 180th meridian
+ * Fixed various typos
+ * Fixed error where _gdprCompliance on Plugin class would be empty for Gutenberg integration
+ *
+ * 7.11.24 :- 2019-05-20 :- Medium priority
+ * Store Locator module no longer triggers a filter update when the address was not found
+ *
+ * 7.21.23
+ * Tested with WordPress 5.2
+ * Added more robust error handling for missing files and failed initialisations (when NOT in developer mode)
+ * Fixed LatLngBounds issue with 180th meridian
+ * Fixed "undefined" in map edit page infowindows
+ *
+ * 7.11.22 :- 2019-05-08 :- Low priority
+ * Added the ability to toggle auto night mode as well as a theme
+ * Added a min height to bakend map so that it does not break when height is set to 100%
+ * Added shift-click range selection to admin marker table
+ * Added code to automatically regenerate readme.txt changelog
+ * Fixed ModernStoreLocator creating OpenLayers store locator when engine setting is null and defaulting to Google
+ * Fixed beforeunload listener always bound on map edit page (fixed Save Changes? prompt shown even if no changes were made)
+ * Dropped logging in ScriptLoader module
+ *
+ * 7.11.21 :- 2019-04-16 :- Low priority
+ * Added serializeFormData to DOMDocument and DOMElement
+ * Added new event for InfoWindows - domready.wpgmza
+ * Added new function WPGMZA.extend for shorthand extension of modules
+ * Added warning when WPGMZA.RestAPI.call is called (as opposed to WPGMZA.restAPI.call)
+ * Implemented factory method for map settings page JS module
+ * Changed RestAPI to not throw an error when a call is aborted
+ * Changed DB version checks to use global version string (this module is currently not used)
+ * Fixed missing comma in DB installation code preventing marker table from being created (this module is currently not used)
+ *
+ * 7.11.20 :- 2019-04-09 :- Low priority
+ * Added Mexican Spanish (es_MX) translations
+ * Added revert back to DB pull when XML folder not present
+ * Updated PO files from sources
+ * Fixed rectangles not working when using v6 of Pro
+ *
+ * 7.11.19 :- 2019-04-02 :- Low priority
+ * Readme.txt Upgrade Notice updated
+ * Fixed markers sometimes off position when using OpenLayers
+ *
+ * 7.11.18 :- 2019-04-02 :- High priority
+ * Fixed potential REST API exploit (affects 7.11.00 - 7.11.17 - with thanks to Thomas Chauchefoin)
+ *
+ * 7.11.17 :- 2019-04-02 :- Low priority
+ * Added shortcode attribute classname
+ * Fixed Custom CSS classes in Gutenberg editor not being applied
+ *
+ * 7.11.16 :- 2019-03-28 :- Low priority
+ * Added Catalan translation files
+ * Added hide POI logic to WPGMZA.GoogleMap
+ * Added new global setting WPGMZA.settings.hide_points_of_interest
+ *
+ * 7.11.15 :- 2019-03-25 :- Medium priority
+ * Added caching warning to GDPR Compliance settings panel
+ * Added check for wp.components in Gutenberg module
+ * Renamed Croation translations to correct -hr.* suffix
+ * Fixed incorrect logic causing unapproved markers to appear in Pro marker listings
+ * Relaxed "combined file would be blank" from exception to an admin notice when in the WordPress environment
+ *
+ * 7.11.14 :- 2019-03-14 :- Low priority
+ * Added convenience function WPGMZA.getQueryParamValue
+ * Most PHP now uses isInDeveloperMode() rather than referencing the setting directly
+ * Fixed setting developer mode cookie would set developer mode in database
+ *
+ * 7.11.13 :- 2019-03-11 :- Low priority 
+ * Fixed adding "select" function to Array prototype colliding with "select" event listener for markers
+ * Fixed sorting direction not respected in AjaxTable following 7.11.11 changes
+ *
+ * 7.11.12 :- 2019-03-08 :- Low priority
+ * Removed debugging code from class.query.php
+ * Fixed mismatched setting name for Store Locator distance units causing "miles" to be ignored
+ *
+ * 7.11.11 :- 2019-03-07 :- Low priority
+ * Allowed LatLngBounds to wrap around 180th meridian, Gold now clusters correctly on wide or zoomed out maps
+ * Altered AjaxTable to treat text fields containing numeric data as numeric, giving more natural sort order on those fields
+ * Fixed wildcard not being used when no fields passed to Query
+ * Fixed notices and inconsistencies with Elementor integration
+ *
+ * 7.11.10 :- 2019-03-05 :- Low priority
+ * Changed Google Maps API error handler to render in a panel rather than in a modal dialog
+ * Removed "In light of recent GDPR regulation" admin notice
+ * Fixed clicking listen item outside link has no effect on map edit page tabs
+ *
+ * 7.11.09 :- 2019-02-28 :- Medium priority
+ * Added disableInfoWindow to map objects which is used by InfoWindow.prototype.open
+ * Added LatLng.fromCurrentPosition
+ * Added warning and explanation when Google Maps is selected but API loader is not allowed to load the API
+ * Non-standard jQuery versions now issue console warning rather than cancelling map initialisation
+ * Map element now fires infowindow close event
+ * Fixed infowindow close event firing after infowindow element removed
+ *
+ * 7.11.08 :- 2019-02-25 :- Medium priority
+ * Google Maps API error dialog is now shown when in developer mode
+ * Fixed missing link on "No API Keys" message in Google Maps API error dialog
+ * Fixed "undefined" InfoWindow opening
+ * Removed 100px minimum width from InfoWindows
+ *
+ * 7.11.07 :- 2019-02-22 :- Medium priority
+ * Added Distance class
+ * Added property storeLocatorDistanceUnits to WPGMZA\Map
+ * Fixed Spatial function prefix not applied for version 8 due to wrong operator
+ * Fixed MarkerFilter radius clause ignoring store locator distance units setting
+ * Removed console.log call in GoogleMarker setVisible
+ *
+ * 7.11.06 :- 2019-02-20 :- Low priority
+ * WPGMZA.RestAPI.prototype.call now returns xhr
+ * Improved modern store locator UX by switching reset button back to search button when text is inputted into address field
+ * Fixed "disable double click zoom" logic flipped
+ * Fixed undefined notice in AjaxTable breaking carousel marker listing in Pro when display_errors is true
+ * Fixed bulk delete not working due to removed legacy function
+ *
+ * 7.11.05 :- 2019-02-15 :- Medium priority
+ * Improved WP Migrate DB integration by adding our plugin to their whitelist when WP Migrate DB is activated
+ * Re-added data-wpgmza-datatable-options attribute to datatables
+ * Fixed encoding issues in marker listing caused by UTF-8 to HTML entities conversion not being used
+ *
+ * 7.11.04 :- 2019-02-13 :- Medium priority
+ * Added extra functions to LatLngBounds to support upcoming Gold patch  (extendByPixelMargin, contains)
+ * Added Caltopo to tile servers
+ * Added Latvian translation
+ * Shortcode attributes are now passed to map element through data-shortcode-attributes
+ * DataTables loads unminified in developer mode
+ * DataTables no longer enqueued twice on map edit page
+ * DataTables translation re-applied following new AJAX implementation
+ * Changed wrong text domains in translation functions in tile-server-fieldset.html.php
+ *
+ * 7.11.03 :- 2019-02-06 :- Low priority
+ * DataTables issue no longer present when running Developer Mode
+ * Fixed "display all" breaking admin marker table
+ * Fixed "Map Type" not being applied
+ *
  * 7.11.02 :- 2019-01-31 :- High priority
  * Added override method to Settings module so settings are overridable without altering database
  * Fixed fatal error in legacy-core.php when running older versions of Pro without Custom Fields
@@ -658,6 +841,141 @@ Domain Path: /languages
  * Removed the "map could not load" error
  * Fixed a bug that when threw off gps co-ordinates when adding a lat,lng as an address
  * 
+ * 6.0.18
+ * You can now select which roles can access the map editor
+ *
+ * 6.0.17
+ * Minor update: PO files updated
+ *
+ * 6.0.16
+ * You can now choose which folder your markers are saved in
+ * Better error reporting for file permission issues
+ *
+ * 6.0.15
+ * Small bug fixes
+ * Map marker location bug fix
+ * Russian translation added by Borisa Djuraskovic
+ *
+ * 6.0.14
+ * Code improvements
+ * Added option for selecting Celsius or Fahrenheit with the Google Maps weather layer 
+ *
+ * 6.0.13
+ * Fixed PHP warnings and the plugin is now PHP 5.5 compatible
+ *
+ * 6.0.12
+ * Fixed a google map marker XML file location bug
+ *
+ * 6.0.11
+ * Small bug fix on the WP Google Maps welcome page
+ *
+ * 6.0.10
+ * Tested on WP 3.9
+ * Fixed a bug that only displayed two map marker categories for the store locator (pro)
+ * Added the option to select which Google Map API version you would like to use. There were issues when using Google Map API v3.15 (lines were created on the map for no reason. The default is now Google Map API V3.14)
+ *
+ * 6.0.9
+ * Maps now automatically work in Tabs without having to add any code
+ * Added a "zoom level" slider to the Google map settings
+ * Added a check for GoDaddy Wordpress hosting and the APC object cache due to the issues that arise while using it
+ * Fixed a polyline bug
+ * Added "stroke opacity" options to polygons
+ * Added a warning when users want to use % for the map height
+ *
+ * 6.0.8
+ * Fixed a Mac Firefox style issue with the WP Google Maps Store Locator
+ * Fixed a function error in the polyline functions file
+ *
+ * 6.0.7
+ * Upgrading of plugin is now handled correctly
+ *
+ * 6.0.6
+ * Multisite bug fixes
+ * XML marker file bug fixes (thank you Endymion00)
+ *
+ * 6.0.5
+ * Markers are now stored in the uploads folder
+ * Small bug fixes
+ *
+ * 6.0.4
+ * Performance update
+ *
+ * 6.0.3
+ * Small bug fix
+ *
+ * 6.0.2
+ * Style bug fix
+ *
+ * 6.0.1
+ * Small bug fix
+ *
+ * 6.0.0
+ * Fixed a map width bug with the datatables layout. Now falls in line with the map width.
+ * Added more options to the map settings page
+ * Fixed a bug that forced a new geocode on every marker edit, even if the address wasnt changed
+ * Updated TimThumb from 2.8.11 to 2.8.13
+ * You can now choose for your map InfoWindows to open from mouse click or hover
+ * Better error handling when the map cannot show due to conflicts or JS errors
+ * Fixed the bug that caused high memory usage
+ * Major bug fixes
+ *
+ * 5.24
+ * Bug fix - The map style changed the style of your theme.
+ *
+ * 5.23
+ * Add animations to your map markers (lite)
+ * Choose to have the infowindow open by default (lite)
+ * Add the bicycle and traffic layer to your map (lite)
+ * Substantial coding improvements and bug fixes
+ *
+ * 5.22
+ * Fixed the marker sort order bug
+ *
+ * 5.21
+ * Fixed a bug that if clicking the "add maker" button produced an error, the "add marker" button would disappear.
+ *
+ * 5.20
+ * Categories can now be hidden from the marker list
+ * German translation added thanks to Matteo Ender
+ *
+ * 5.19
+ * Fixed a styling bug with Firefox
+ * Fixed the bug that caused all markers to be lost upon upgrading
+ *
+ * 5.18
+ * Added improved styling to the address in the map infowindow
+ *
+ * 5.17
+ * Fixed update bug
+ *
+ * 5.16
+ * Plugin now checks to see if the Google Maps API is already loaded before trying to load it again
+ * Fixed some SSL bugs
+ *
+ * 5.15
+ * Added marker category functionality
+ * Added Google Map Mashup functionality
+ * Fixed small bugs
+ * Added backwards compatibility for older versions of WordPress
+ * Replaced deprecated WordPress function calls
+ * Added Spanish translation - Thank you Fernando!
+ *
+ * 5.14
+ * The map plugin now uses the new media manager
+ * Fixed some styling conflicts
+ * Added missing strings to localization
+ * Updated to the latest Timthumb version
+ *
+ * 5.13
+ * Fixed a small bug
+ *
+ * 5.12
+ * Removed deprecated code
+ *
+ * 5.11
+ * Added SSL bug fixes
+ * Fixed a bug that wasnt allowing users to edit the exact location
+ *
  */
 
 /*
@@ -711,12 +1029,12 @@ if(!function_exists('wpgmza_show_rest_api_missing_error'))
 	{
 		?>
 		<div class="notice notice-error">
-				<p>
-					<?php
-					_e('<strong>WP Google Maps:</strong> This plugin requires the WordPress REST API, which does not appear to be present on this installation. Please update WordPress to version 4.7 or above.', 'wp-google-maps');
-					?>
-				</p>
-			</div>
+			<p>
+				<?php
+				_e('<strong>WP Google Maps:</strong> This plugin requires the WordPress REST API, which does not appear to be present on this installation. Please update WordPress to version 4.7 or above.', 'wp-google-maps');
+				?>
+			</p>
+		</div>
 		<?php
 	}
 }
@@ -739,4 +1057,43 @@ if(!function_exists('get_rest_url'))
 	return;
 }
 
-require_once(plugin_dir_path(__FILE__) . 'legacy-core.php');
+function wpgmza_preload_is_in_developer_mode()
+{
+	$globalSettings = get_option('wpgmza_global_settings');
+		
+	if(empty($globalSettings))
+		return !empty($_COOKIE['wpgmza-developer-mode']);
+	
+	if(!($globalSettings = json_decode($globalSettings)))
+		return false;
+	
+	return isset($globalSettings->developer_mode) && $globalSettings->developer_mode == true;
+}
+
+if(wpgmza_preload_is_in_developer_mode())
+{
+	require_once(plugin_dir_path(__FILE__) . 'legacy-core.php');
+}
+else
+	try{
+		require_once(plugin_dir_path(__FILE__) . 'legacy-core.php');
+	}catch(Exception $e) {
+		add_action('admin_notices', function() use ($e) {
+	
+			?>
+			<div class="notice notice-error is-dismissible">
+				<p>
+					<strong>
+					<?php
+					_e('WP Google Maps', 'wp-google-maps');
+					?></strong>:
+					<?php
+					_e('The plugin failed to load due to a fatal error. This is usually due to missing files, or incompatible software. Please re-install the plugin. We recommend you use PHP 5.6 or above. Technical details are as follows: ', 'wp-google-maps');
+					echo $e->getMessage();
+					?>
+				</p>
+			</div>
+			<?php
+			
+		});
+	}

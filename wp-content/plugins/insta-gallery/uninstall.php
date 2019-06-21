@@ -1,14 +1,16 @@
 <?php
 
-if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-	exit();
+if (!defined('WP_UNINSTALL_PLUGIN')) {
+  die(-1);
 }
-// remove all settings related to the plugin
-function insgal_delete_plugin() {
-	$InstaGallerySetting = get_option('insta_gallery_setting');
-	if(!empty($InstaGallerySetting['igs_flush'])){
-	   delete_option( 'insta_gallery_setting' );
-	   delete_option( 'insta_gallery_items' );
-	}
+
+if (!is_multisite()) {
+  $qligg = get_option('insta_gallery_settings');
+  if (!empty($qligg['insta_flush'])) {
+    delete_option('insta_gallery_settings');
+    delete_option('insta_gallery_setting');
+    delete_option('insta_gallery_items');
+    delete_option('insta_gallery_token');
+    delete_option('insta_gallery_iac');
+  }
 }
-insgal_delete_plugin();

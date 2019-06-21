@@ -143,7 +143,7 @@ namespace wpCloud\StatelessMedia {
           }
           // Getting network settings
           elseif(is_multisite() && $option != 'organize_media'){
-            $network = get_site_option( $_option );
+            $network = get_site_option( $_option, $default );
             // If network settings available then override by network settings.
             if($network || is_network_admin()){
               $value = $network;
@@ -190,7 +190,7 @@ namespace wpCloud\StatelessMedia {
             $value = get_site_option( $_option, $default );
           }
           
-          // Converting to string true flase for angular.
+          // Converting to string true false for angular.
           if(is_bool($value)){
             $value = $value === true ? "true" : "false";
           }
@@ -344,6 +344,9 @@ namespace wpCloud\StatelessMedia {
             if($name == 'organize_media'){
               $option = 'uploads_use_yearmonth_folders';
             }
+
+            // Be sure to cleanup values before saving
+            $value = trim($value);
 
             if(is_network_admin()){
               update_site_option( $option, $value );

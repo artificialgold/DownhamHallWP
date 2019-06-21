@@ -366,7 +366,7 @@ class Crud extends Factory implements \IteratorAggregate, \JsonSerializable
 		
 		$arbitrary_data_column_name = $this->get_arbitrary_data_column_name();
 		
-		if($arbitrary_data_column_name && isset($this->fields->arbitrary_data_column_name))
+		if($arbitrary_data_column_name && isset($this->fields[$arbitrary_data_column_name]))
 		{
 			$this->parse_arbitrary_data($this->fields[$arbitrary_data_column_name]);
 			unset($this->fields[$arbitrary_data_column_name]);
@@ -604,7 +604,8 @@ class Crud extends Factory implements \IteratorAggregate, \JsonSerializable
 		
 		$stmt = $wpdb->prepare("SELECT $arbitrary_data_column_name FROM {$this->table_name} WHERE id=%d", array($this->id));
 		
-		$data = maybe_unserialize($wpdb->get_var());
+		$raw = $wpdb->get_var($stmt);
+		$data = maybe_unserialize($raw);
 		
 		if(empty($data))
 			$data = array();
@@ -628,7 +629,7 @@ class Crud extends Factory implements \IteratorAggregate, \JsonSerializable
 		$column_names = $this->get_column_names();
 		
 		if(array_search($name, $column_names) !== false)
-			throw \Exception('Only arbitrary data can be unset. Columns must be set to NULL instead');
+			throw new \Exception('Only arbitrary data can be unset. Columns must be set to NULL instead');
 		
 		unset($this->fields[$name]);
 		

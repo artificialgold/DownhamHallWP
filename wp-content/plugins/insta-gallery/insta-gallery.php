@@ -1,147 +1,113 @@
 <?php
-/*
- * Plugin Name: Instagram Gallery
- * Description: Display Gallery on the website from Instagram.
- * Author: Karan Singh
- * Author URI: https://www.karansingh.ml/
- * Requires at least: 3.8
- * Requires PHP: 5.3
- * Tested up to: 4.9
- * Text Domain: insta-gallery
- * Domain Path: /languages/
- * Version: 1.5.9
+/**
+ * Plugin Name:       WP Instagram Feed Gallery
+ * Plugin URI:        https://quadlayers.com/portfolio/instagram-gallery/
+ * Description:       Display beautifull and responsive galleries on your website from your Instagram feed account.
+ * Version:           2.4.3
+ * Author:            WP Instagram Feed
+ * Author URI:        https://quadlayers.com
+ * License:           GPL-2.0+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * Text Domain:       insta-gallery
+ * Domain Path:       /languages
  */
-if (! defined('ABSPATH')) {
-    exit(); // Exit if accessed directly.
+if (!defined('ABSPATH'))
+  exit;
+
+if (!defined('QLIGG_PLUGIN_NAME')) {
+  define('QLIGG_PLUGIN_NAME', 'Instagram Gallery');
+}
+if (!defined('QLIGG_PLUGIN_VERSION')) {
+  define('QLIGG_PLUGIN_VERSION', '2.4.3');
+}
+if (!defined('QLIGG_PLUGIN_FILE')) {
+  define('QLIGG_PLUGIN_FILE', __FILE__);
+}
+if (!defined('QLIGG_PLUGIN_DIR')) {
+  define('QLIGG_PLUGIN_DIR', __DIR__ . DIRECTORY_SEPARATOR);
+}
+if (!defined('QLIGG_DOMAIN')) {
+  define('QLIGG_DOMAIN', 'qligg');
+}
+if (!defined('QLIGG_WORDPRESS_URL')) {
+  define('QLIGG_WORDPRESS_URL', 'https://wordpress.org/plugins/insta-gallery/');
+}
+if (!defined('QLIGG_REVIEW_URL')) {
+  define('QLIGG_REVIEW_URL', 'https://wordpress.org/support/plugin/insta-gallery/reviews/?filter=5#new-post');
+}
+if (!defined('QLIGG_DEMO_URL')) {
+  define('QLIGG_DEMO_URL', 'https://quadlayers.com/portfolio/wordpress-instagram-feed/?utm_source=qligg_admin');
+}
+if (!defined('QLIGG_PURCHASE_URL')) {
+  define('QLIGG_PURCHASE_URL', QLIGG_DEMO_URL);
+}
+if (!defined('QLIGG_SUPPORT_URL')) {
+  define('QLIGG_SUPPORT_URL', 'https://quadlayers.com/account/support/?utm_source=qligg_admin');
+}
+if (!defined('QLIGG_GROUP_URL')) {
+  define('QLIGG_GROUP_URL', 'https://www.facebook.com/groups/quadlayers');
+}
+if (!defined('QLIGG_DEVELOPER')) {
+  define('QLIGG_DEVELOPER', false);
 }
 
-// plugin global constants
-define('INSGALLERY_VER', '1.5.9');
-define('INSGALLERY_PRODUCTION', true); // ******  ******  ***** ******   ***** ******  ENV, CSS/JS min ******  *****
+if (!class_exists('QLIGG')) {
 
-define('INSGALLERY_PATH', plugin_dir_path(__FILE__));
-define('INSGALLERY_URL', plugins_url('', __FILE__));
-define('INSGALLERY_PLUGIN_DIR', plugin_basename(dirname(__FILE__)));
+  class QLIGG {
 
-class INSGALLERY
-{
+    protected static $instance;
 
-    public function __construct()
-    {
-        register_activation_hook(__FILE__, array(
-            $this,
-            'activate'
-        ));
-        register_deactivation_hook(__FILE__, array(
-            $this,
-            'deactivate'
-        ));
-        
-        if (is_admin()) {
-            add_action('admin_menu', array(
-                $this,
-                'loadMenus'
-            ));
-            // add setting link
-            add_filter('plugin_action_links', array(
-                $this,
-                'insgal_add_action_plugin'
-            ), 10, 5);
-        }
-        
-        add_action('admin_enqueue_scripts', array(
-            $this,
-            'load_admin_scripts'
-        ));
-        
-        include_once (INSGALLERY_PATH . 'app/wp-front.php');
-        include_once (INSGALLERY_PATH . 'app/wp-widget.php');
-        
-        // save ig adv. setting
-        add_action('wp_ajax_save_igadvs', array(
-            $this,
-            'save_igadvs'
-        ));
-        
-        // load Translations
-        add_action('plugins_loaded', array(
-            $this,
-            'load_translations_instagal'
-        ));
+    function register_widget() {
+      register_widget('QLIGG_Widget');
     }
 
-    public function activate()
-    {}
+    function api() {
 
-    public function deactivate()
-    {}
+      global $qligg_api;
 
-    public function save_igadvs()
-    {
-        if (! isset($_POST['igadvs_nonce']) || ! wp_verify_nonce($_POST['igadvs_nonce'], 'igadvs_nonce_key')) {
-            wp_send_json_error('Invalid Request.');
-        }
-        $igs_spinner_image_id = '';
-        $igs_flush = (isset($_POST['igs_flush']) && $_POST['igs_flush']) ? true : false;
-        if (! empty($_POST['igs_spinner_image_id'])) {
-            $igs_spinner_image_id = (int) $_POST['igs_spinner_image_id'];
-        }
-        $insta_gallery_setting = array(
-            'igs_flush' => $igs_flush,
-            'igs_spinner_image_id' => $igs_spinner_image_id
-        );
-        update_option('insta_gallery_setting', $insta_gallery_setting, false);
-        
-        wp_send_json_success(__('settings updated successfully', 'insta-gallery'));
+      if (!class_exists('QLIGG_API')) {
+
+        include_once ('includes/api.php');
+        include_once ('includes/ajax.php');
+
+        $qligg_api = new QLIGG_API();
+      }
     }
 
-    function load_translations_instagal()
-    {
-        load_plugin_textdomain('insta-gallery', false, INSGALLERY_PLUGIN_DIR . '/languages/');
+    function includes() {
+      include_once ('includes/utis.php');
+      include_once ('includes/widget.php');
+      include_once ('includes/defaults.php');
+      include_once ('includes/settings.php');
+      include_once ('includes/frontend.php');
     }
 
-    function load_admin_scripts($hook)
-    {
-        // Load only on plugin page
-        if ($hook != 'settings_page_insta_gallery') {
-            return;
-        }
-        wp_enqueue_style('insta-gallery-admin', INSGALLERY_URL . '/assets/admin-style.css', array(), INSGALLERY_VER);
-        
-        // Enqueue WordPress media scripts
-        wp_enqueue_media();
+    function i18n() {
+      load_plugin_textdomain('insta-gallery', false, QLIGG_PLUGIN_DIR . '/languages/');
     }
 
-    function loadMenus()
-    {
-        add_options_page(__('Instagram Gallery', 'insta-gallery'), __('Instagram Gallery', 'insta-gallery'), 'manage_options', 'insta_gallery', array(
-            $this,
-            'loadPanel'
-        ));
-        // add_menu_page();
+    function init() {
+      add_action('widgets_init', array($this, 'register_widget'));
+      add_action('plugins_loaded', array($this, 'i18n'));
     }
 
-    function loadPanel()
-    {
-        require_once (INSGALLERY_PATH . 'app/wp-panel.php');
+    public static function instance() {
+      if (!isset(self::$instance)) {
+        self::$instance = new self();
+        self::$instance->api();
+        self::$instance->includes();
+        self::$instance->init();
+      }
+      return self::$instance;
     }
 
-    function insgal_add_action_plugin($actions, $plugin_file)
-    {
-        static $plugin;
-        
-        if (! isset($plugin))
-            $plugin = plugin_basename(__FILE__);
-        if ($plugin == $plugin_file) {
-            
-            $settings = array(
-                'settings' => '<a href="options-general.php?page=insta_gallery">' . __('Settings', 'insta-gallery') . '</a>'
-            );
-            
-            $actions = array_merge($settings, $actions);
-        }
-        
-        return $actions;
+    public static function do_activation() {
+      set_transient('qligg-first-rating', true, MONTH_IN_SECONDS);
     }
+
+  }
+
+  QLIGG::instance();
+
+  register_activation_hook(QLIGG_PLUGIN_FILE, array('QLIGG', 'do_activation'));
 }
-new INSGALLERY();
